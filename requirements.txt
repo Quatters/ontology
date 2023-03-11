@@ -1,0 +1,2 @@
+vstutils[rpc,prod]==5.3.4
+httpx==0.23.3
