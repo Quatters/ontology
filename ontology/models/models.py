@@ -49,7 +49,7 @@ class TruckModel(BModel):
     fuel_consumption = FloatField()
 
     class Meta:
-        ordering = ['name'],
+        ordering = ['name']
         constraints = [
             CheckConstraint(
                 check=Q(load_capacity__gt=0),
@@ -105,6 +105,8 @@ class ComputedRoute(BModel):
     cargo = FkModelField(Cargo, on_delete=CASCADE)
     fuel = FloatField()
     path = JSONField(default=list)
+    distance = FloatField(db_index=True)
 
     class Meta:
         default_related_name = 'computed_routes'
+        ordering = ['cargo', 'distance']

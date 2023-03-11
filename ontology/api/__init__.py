@@ -1,9 +1,12 @@
+from django.db import transaction
 from rest_framework import fields as drffields
 from vstutils.utils import create_view
 from vstutils.api.actions import EmptyAction
 from vstutils.api.serializers import BaseSerializer
+from vstutils.api import fields as vstfields
 from ontology.models import models
 from ontology.models.tasks import RouteTask
+from ontology.models.algorithms import compute_routes
 from ontology.constants import CargoType
 
 
@@ -104,6 +107,13 @@ class ComputedRouteViewMixin:
     @EmptyAction(result_serializer_class=ComputeRoutesSerializer, detail=False)
     def compute_routes(self, request, *args, **kwargs):
         RouteTask.do()
+
+        # with transaction.atomic():
+        #     routes = compute_routes()
+        #     models.ComputedRoute.objects.all().delete()
+        #     for route in routes:
+        #         route.save()
+
         return {'detail': 'Routes being computed.'}
 
 
@@ -114,13 +124,35 @@ ComputedRouteViewSet = create_view(
         'id',
         'truck',
         'cargo',
-        'fuel',
+        'distance',
     ),
     detail_fields=(
         'id',
         'truck',
         'cargo',
+        'distance',
         'fuel',
         'path',
     ),
+    override_list_fields={
+        'truck': vstfields.FkModelField(
+            select=models.Truck,
+            autocomplete_represent='number',
+        ),
+        'cargo': vstfields.FkModelField(
+            select=models.Cargo,
+            autocomplete_represent='id',
+        ),
+    },
+    override_detail_fields={
+        'truck': vstfields.FkModelField(
+            select=models.Truck,
+            autocomplete_represent='number',
+        ),
+        'cargo': vstfields.FkModelField(
+            select=models.Cargo,
+            autocomplete_represent='id',
+        ),
+        'path': drffields.ListField(child=vstfields.FkModelField(select=models.Area)),
+    },
 )
