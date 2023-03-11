@@ -1,2 +1,4 @@
 vstutils[rpc,prod]==5.3.4
 httpx==0.23.3
+psycopg2-binary~=2.9.5
+httptools==0.5.0

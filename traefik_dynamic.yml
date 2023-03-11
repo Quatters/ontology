@@ -1,0 +1,26 @@
+http:
+  middlewares:
+    compress:
+      compress: {}
+
+  services:
+    ontology:
+      loadBalancer:
+        servers:
+          - url: "http://ontology:8080/"
+
+    centrifugo:
+      loadBalancer:
+        servers:
+          - url: "http://centrifugo:8000/"
+
+  routers:
+    centrifugo:
+      rule: "PathPrefix(`/connection/websocket`)"
+      service: centrifugo
+
+    ontology:
+      rule: "PathPrefix(`/`)"
+      service: ontology
+      middlewares:
+        - "compress"
