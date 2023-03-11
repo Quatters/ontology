@@ -15,8 +15,8 @@ services:
 
   ontology:
     build: .
-    restart: unless-stopped
-    entrypoint: "python -m ontology web"
+    restart: always
+    entrypoint: sh -c "python -m ontology migrate && python -m ontology web"
     environment:
       DATABASE_URL: postgres://postgres:postgres@database:5432/default
     depends_on:
