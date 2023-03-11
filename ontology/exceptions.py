@@ -1,2 +1,0 @@
-class OntologyError(Exception):
-    pass

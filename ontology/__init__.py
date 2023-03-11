@@ -8,7 +8,7 @@ __version__ = '1.0.0'
 
 settings = {
     "VST_PROJECT": 'ontology',
-    "VST_PROJECT_GUI_NAME": 'Ontology',
+    "VST_PROJECT_GUI_NAME": 'Trucking',
     "DJANGO_SETTINGS_MODULE": 'ontology.settings',
 }
 
