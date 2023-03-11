@@ -1,9 +1,10 @@
 import os
-
 from vstutils.settings import *  # noqa: F403
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+SPA_STATIC.append({'priority': 10, 'type': 'js', 'name': 'ontology/bundle/app.js'})
 
 INSTALLED_APPS += [  # noqa: F405
     'ontology',
@@ -15,6 +16,9 @@ LANGUAGES = (
 )
 
 API[VST_API_VERSION] = {
+    'statistics': {
+        'view': 'ontology.api.StatisticsViewSet',
+    },
     'delivery_areas': {
         'view': 'ontology.api.AreaViewSet',
     },

@@ -4,6 +4,8 @@ from vstutils.utils import create_view
 from vstutils.api.actions import EmptyAction
 from vstutils.api.serializers import BaseSerializer
 from vstutils.api import fields as vstfields
+from vstutils.api.base import NonModelsViewSet
+from vstutils.api.responses import HTTP_200_OK
 from ontology.models import models
 from ontology.models.tasks import RouteTask
 from ontology.models.algorithms import compute_routes
@@ -156,3 +158,33 @@ ComputedRouteViewSet = create_view(
         'path': drffields.ListField(child=vstfields.FkModelField(select=models.Area)),
     },
 )
+
+
+class StatisticsSerializer(BaseSerializer):
+    delivery_areas = drffields.BooleanField()
+    routes = drffields.BooleanField()
+    truck_models = drffields.BooleanField()
+    trucks = drffields.BooleanField()
+
+    _schema_properties_groups = {
+        'Integrity check': (
+            'delivery_areas',
+            'routes',
+            'truck_models',
+            'trucks',
+        )
+    }
+
+
+class StatisticsViewSet(NonModelsViewSet):
+    base_name = 'statistics'
+    serializer_class = StatisticsSerializer
+
+    def list(self, *args, **kwargs):
+        serializer = self.serializer_class(instance={
+            'delivery_areas': models.Area.objects.exists(),
+            'routes': models.Route.objects.exists(),
+            'truck_models': models.TruckModel.objects.exists(),
+            'trucks': models.Truck.objects.exists(),
+        })
+        return HTTP_200_OK(serializer.data)

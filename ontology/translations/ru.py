@@ -2,6 +2,8 @@ TRANSLATION = {
     'Id not': 'Идентификатор не',
     'Name not': 'Наименование не',
 
+    'Home': 'Главная',
+    'Integrity check': 'Проверка целостности',
     'Knowledge editor': 'Редактор знаний',
     'Data editor': 'Редактор данных',
     'Problem solver': 'Решатель задач',
