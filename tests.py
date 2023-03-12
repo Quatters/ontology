@@ -133,7 +133,7 @@ class RouteComputingTestCase(BaseTestCase):
         ])
         return results[0]['data']
 
-    def test_simple_1(self):
+    def test_simple(self):
         area1 = models.Area.objects.create(name='area1')
         area2 = models.Area.objects.create(name='area2')
 
@@ -267,3 +267,79 @@ class RouteComputingTestCase(BaseTestCase):
                 area4.id,
             ],
         })
+
+    def test_fuel_respects(self):
+        area1 = models.Area.objects.create(name='area1')
+        area2 = models.Area.objects.create(name='area2')
+        area3 = models.Area.objects.create(name='area3')
+
+        # too long for fuel
+        models.Route.objects.create(
+            wherefrom=area1,
+            whereto=area3,
+            distance=1200,
+        )
+        # worse but enough for fuel
+        models.Route.objects.create(
+            wherefrom=area1,
+            whereto=area2,
+            distance=700,
+        )
+        models.Route.objects.create(
+            wherefrom=area2,
+            whereto=area3,
+            distance=900,
+        )
+
+        truck1 = models.Truck.objects.create(
+            model=self.truck_model1,
+            number='truck1',
+            type=CargoType.Bulk,
+            location=area1,
+        )
+        cargo1 = models.Cargo.objects.create(
+            type=CargoType.Bulk,
+            location=area1,
+            destination=area3,
+            mass=100,
+        )
+
+        self.make_calculations()
+        list_result, count = self.get_calculated_routes_list()
+        self.assertEqual(count, 1)
+        result = self.get_calculated_route(list_result[0]['id'])
+        self.assertDictEqual(result, {
+            **result,
+            'truck': truck1.id,
+            'cargo': cargo1.id,
+            'distance': 1600,
+            'fuel': 160,
+            'path': [area1.id, area2.id, area3.id],
+        })
+
+    def test_truck_cannot_move(self):
+        area1 = models.Area.objects.create(name='area1')
+        area2 = models.Area.objects.create(name='area2')
+
+        models.Route.objects.create(
+            wherefrom=area1,
+            whereto=area2,
+            distance=1200,
+        )
+
+        models.Truck.objects.create(
+            model=self.truck_model1,
+            number='truck1',
+            type=CargoType.Bulk,
+            location=area2,
+        )
+        models.Cargo.objects.create(
+            type=CargoType.Bulk,
+            location=area1,
+            destination=area2,
+            mass=100,
+        )
+
+        self.make_calculations()
+        _, count = self.get_calculated_routes_list()
+        self.assertEqual(count, 0)

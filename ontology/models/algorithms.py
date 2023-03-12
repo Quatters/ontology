@@ -5,7 +5,10 @@ from ontology.models.models import Area, Route, Truck, Cargo, ComputedRoute
 logger = logging.getLogger(__name__)
 
 
-def dijkstra(area_from: Area) -> tuple[dict, dict]:
+def dijkstra(
+    area_from: Area,
+    max_straight_distance: float
+) -> tuple[dict, dict]:
     distances = {None: float('inf')}
     parents = {}
     checked = {}
@@ -34,6 +37,8 @@ def dijkstra(area_from: Area) -> tuple[dict, dict]:
             area = Area.objects.get(id=current_area_id)
             for route in area.wherefrom_routes.union(area.whereto_routes.all()):
                 route: Route
+                if route.distance > max_straight_distance:
+                    continue
                 distance = distances[current_area_id] + route.distance
                 if distance < distances[route.whereto.id]:
                     distances[route.whereto.id] = distance
@@ -78,11 +83,15 @@ def compute_routes():
             truck: Truck
             computed_route_kwargs = {'cargo': cargo, 'truck': truck}
 
-            truck_to_cargo_distances, truck_to_cargo_parents = dijkstra(truck.location)
+            max_straight_distance = truck.model.gas_tank_capacity \
+                * 100 \
+                / truck.model.fuel_consumption
+            truck_to_cargo_distances, truck_to_cargo_parents = \
+                dijkstra(truck.location, max_straight_distance)
             truck_to_cargo_distance = \
                 truck_to_cargo_distances[cargo.location.id]
             cargo_to_destination_distances, cargo_to_destination_parents = \
-                dijkstra(cargo.location)
+                dijkstra(cargo.location, max_straight_distance)
             cargo_to_destination_distance = \
                 cargo_to_destination_distances[cargo.destination.id]
 
